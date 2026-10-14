@@ -7,7 +7,7 @@
 #
 # See the comment at the top of each test for what it checks.
 
-TESTS = readpst-parallel-consistency.sh
+TESTS = readpst-parallel-consistency.sh readpst-unreadable-item.sh
 EXTRA_DIST = $(TESTS)
 AM_TESTS_ENVIRONMENT = \
     READPST='$(abs_top_builddir)/src/readpst'; export READPST;
