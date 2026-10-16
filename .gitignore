@@ -60,3 +60,4 @@ Makefile.in
 
 /tests/*.log
 /tests/*.trs
+/tests/test-embedded-rfc822
