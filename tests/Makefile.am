@@ -2,15 +2,18 @@
 #
 # test-embedded-rfc822 builds its input in memory and always runs.
 #
-# readpst-embedded-rfc822.sh needs a real PST file, and none is shipped.
-# Point LIBPST_TEST_PST at a .pst file or a directory of .pst files; without
-# it that test is skipped:
+# The shell tests need a real PST file, and none is shipped. Point
+# LIBPST_TEST_PST at a .pst file or a directory of .pst files; without it
+# those tests are skipped:
 #
 #   make check LIBPST_TEST_PST=/path/to/mail.pst
 #
+# See the comment at the top of each test for what it checks.
+#
 # Memory errors do not always show in the output, so these tests are most
-# useful under AddressSanitizer (or with valgrind installed, which the PST
-# test uses automatically on a non-ASan build). For an ASan build:
+# useful under AddressSanitizer (or with valgrind installed, which the
+# embedded-rfc822 PST test uses automatically on a non-ASan build). For an
+# ASan build:
 #
 #   export ASAN_OPTIONS=detect_leaks=0
 #   ./configure CFLAGS='-g -O1 -fno-omit-frame-pointer -fsanitize=address' \
@@ -29,8 +32,14 @@ test_embedded_rfc822_SOURCES  = test-embedded-rfc822.c
 test_embedded_rfc822_CPPFLAGS = -I$(top_srcdir)/src -I$(top_builddir)
 test_embedded_rfc822_LDADD    = $(top_builddir)/src/libpst.la $(LTLIBICONV) $(REGEXLIB) @ZLIB_LIBS@ $(SEM_LIBS)
 
-TESTS = test-embedded-rfc822 readpst-embedded-rfc822.sh
-EXTRA_DIST = readpst-embedded-rfc822.sh valgrind.supp
+TESTS = test-embedded-rfc822 \
+        readpst-embedded-rfc822.sh \
+        readpst-parallel-consistency.sh \
+        readpst-unreadable-item.sh
+EXTRA_DIST = readpst-embedded-rfc822.sh \
+             readpst-parallel-consistency.sh \
+             readpst-unreadable-item.sh \
+             valgrind.supp
 AM_TESTS_ENVIRONMENT = \
     READPST='$(abs_top_builddir)/src/readpst'; export READPST; \
     LIBTOOL='$(LIBTOOL)'; export LIBTOOL; \
