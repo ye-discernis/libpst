@@ -10,14 +10,16 @@
 #
 # For every PST in $LIBPST_TEST_PST (a .pst file, or a directory of them), the
 # test runs "readpst -j 0 -e -8" and fails if:
-#   - readpst does not exit 0 (a crash, or an AddressSanitizer report);
+#   - readpst does not exit 0 (a crash, or an AddressSanitizer report), or
+#     prints a sanitizer report on stderr;
 #   - valgrind is installed and reports a memory error (valgrind is not used
 #     on an ASan build; set LIBPST_TEST_VALGRIND=no to turn it off);
 #   - an .eml file opens a readpst multipart boundary that it never closes,
 #     which is what a message cut short looks like.
 #
 # Without valgrind or ASan, a glibc build usually passes even with the bug, so
-# run it under one of them. AddressSanitizer build:
+# run it under one of them. AddressSanitizer build (see tests/Makefile.am):
+#   export ASAN_OPTIONS=detect_leaks=0
 #   ./configure CFLAGS='-g -O1 -fno-omit-frame-pointer -fsanitize=address' \
 #               LDFLAGS='-fsanitize=address'
 #   make check LIBPST_TEST_PST=/path/to/mail.pst
@@ -86,6 +88,13 @@ echo "$psts" | while IFS= read -r pst; do
     rc=$?
     if [ "$rc" -ne 0 ]; then
         echo "FAIL: $pst: readpst exited $rc"
+        cat "$work/stderr"
+        exit 1
+    fi
+    # a sanitizer report fails the test even if readpst exited 0, e.g. with
+    # ASAN_OPTIONS=halt_on_error=0 or in a forked child
+    if grep -q -e 'ERROR: AddressSanitizer' -e 'runtime error:' "$work/stderr"; then
+        echo "FAIL: $pst: sanitizer report"
         cat "$work/stderr"
         exit 1
     fi
